@@ -114,5 +114,63 @@ namespace EventBusManagerSystem
                 }
             }
         }
+        public static void RaiseEvent<T>(object eventData = null, string methodName = "") where T : ISubscriber
+        {
+            if (SubsDic.TryGetValue(typeof(T), out var subsObjects))
+            {
+                if (methodName != "")
+                {
+                    var method = typeof(T).GetMethods().FirstOrDefault((s)=>s.Name == methodName);
+                    if (method != null)
+                    {
+                        foreach (var subscriber in subsObjects)
+                        {
+                            var sub = (T) subscriber;
+                            var data = new[] {eventData};
+                            method.Invoke(sub, data);
+                        }
+                    }
+                }
+                else
+                {
+                    var method = typeof(T).GetMethods();
+                    foreach (var subscriber in subsObjects)
+                    {
+                        var sub = (T) subscriber;
+                        var data = new[] {eventData};
+                        foreach (var methodInfo in method)
+                            methodInfo.Invoke(sub, data);
+                    }
+                }
+            }
+        }
+        public static void RaiseEvent<T>(object[] eventData = null, string methodName = "") where T : ISubscriber
+        {
+            if (SubsDic.TryGetValue(typeof(T), out var subsObjects))
+            {
+                if (methodName != "")
+                {
+                    var method = typeof(T).GetMethods().FirstOrDefault((s)=>s.Name == methodName);
+                    if (method != null)
+                    {
+                        foreach (var subscriber in subsObjects)
+                        {
+                            var sub = (T) subscriber;
+                            method.Invoke(sub, eventData);
+                        }
+                    }
+                }
+                else
+                {
+                    var method = typeof(T).GetMethods();
+                    foreach (var subscriber in subsObjects)
+                    {
+                        var sub = (T) subscriber;
+                        foreach (var methodInfo in method)
+                            methodInfo.Invoke(sub, eventData);
+                    }
+                }
+            }
+        }
     }
 }

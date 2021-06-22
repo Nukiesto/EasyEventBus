@@ -18,5 +18,15 @@ namespace EventBusManagerSystem.Demo
         {
             Debug.Log(eventData.Text);
         }
+
+        public void OnRecieveExt(string text)
+        {
+            Debug.Log(text);
+        }
+
+        public void OnRecieveExt2(string text, string text2)
+        {
+            Debug.Log(text + ":" + text2);
+        }
     }
 }
