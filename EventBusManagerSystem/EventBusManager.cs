@@ -1,9 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
-namespace GameEngine.EventBusManagerSystem
+namespace EventBusManagerSystem
 {
+    public interface ISubscriber
+    {
+        
+    }
+    public interface IEventData
+    {
+        
+    }
     public static class EventBusManager
     {
         private static readonly Dictionary<Type, List<ISubscriber>> SubsDic = new Dictionary<Type, List<ISubscriber>>();
@@ -48,19 +57,60 @@ namespace GameEngine.EventBusManagerSystem
                 }
             }
         }
-        public static void RaiseEvent<T>(IEventData eventData) where T : ISubscriber
+        public static void RaiseEvent<T>(IEventData eventData = null, Expression<Action<T>> expression = null) where T : ISubscriber
         {
             if (SubsDic.TryGetValue(typeof(T), out var subsObjects))
             {
-                var methods = typeof(T).GetMethods();
-                //foreach (var methodInfo in methods)
-                //    Debug.Log(methodInfo.Name);
-                foreach (var subscriber in subsObjects)
+                if (expression != null && expression.Body is MethodCallExpression member)
                 {
-                    var sub = (T) subscriber;
-                    var data = new object[] {eventData};
-                    foreach (var methodInfo in methods)
-                        methodInfo.Invoke(sub, data);
+                    var method = member.Method;
+                    foreach (var subscriber in subsObjects)
+                    {
+                        var sub = (T) subscriber;
+                        var data = new object[] {eventData};
+                        method.Invoke(sub, data);
+                    }
+                }
+                else
+                {
+                    var method = typeof(T).GetMethods();
+                    foreach (var subscriber in subsObjects)
+                    {
+                        var sub = (T) subscriber;
+                        var data = new object[] {eventData};
+                        foreach (var methodInfo in method)
+                            methodInfo.Invoke(sub, data);
+                    }
+                }
+            }
+        }
+        public static void RaiseEvent<T>(IEventData eventData = null, string methodName = "") where T : ISubscriber
+        {
+            if (SubsDic.TryGetValue(typeof(T), out var subsObjects))
+            {
+                if (methodName != "")
+                {
+                    var method = typeof(T).GetMethods().FirstOrDefault((s)=>s.Name == methodName);
+                    if (method != null)
+                    {
+                        foreach (var subscriber in subsObjects)
+                        {
+                            var sub = (T) subscriber;
+                            var data = new object[] {eventData};
+                            method.Invoke(sub, data);
+                        }
+                    }
+                }
+                else
+                {
+                    var method = typeof(T).GetMethods();
+                    foreach (var subscriber in subsObjects)
+                    {
+                        var sub = (T) subscriber;
+                        var data = new object[] {eventData};
+                        foreach (var methodInfo in method)
+                            methodInfo.Invoke(sub, data);
+                    }
                 }
             }
         }
