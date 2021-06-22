@@ -26,6 +26,15 @@ namespace EventBusManagerSystem.Demo
         {
             Debug.Log(eventData.Text);
         }
+        public void OnRecieveExt(string text)
+        {
+            Debug.Log(text);
+        }
+
+        public void OnRecieveExt2(string text, string text2)
+        {
+            Debug.Log(text + ":" + text2);
+        }
     }
 }
 ```
@@ -48,6 +57,14 @@ namespace EventBusManagerSystem.Demo
             EventBusManager.RaiseEvent<IOnRecieveMessage>(data, x => x.OnRecieve(null));
             var data2 = new MessageData() {Text = "Test2"};
             EventBusManager.RaiseEvent<IOnRecieveMessage>(data2, nameof(IOnRecieveMessage.OnRecieve));
+
+            EventBusManager.RaiseEvent<IOnRecieveMessage>("Test3", nameof(IOnRecieveMessage.OnRecieveExt));
+            
+            EventBusManager.RaiseEvent<IOnRecieveMessage>(new object[]
+            {
+                "Test4",
+                "Test4_1"
+            }, nameof(IOnRecieveMessage.OnRecieveExt2));
         }
     }
 }
@@ -61,8 +78,8 @@ namespace EventBusManagerSystem.Demo
     public interface IOnRecieveMessage : ISubscriber
     {
         public void OnRecieve(MessageData eventData);
-        //Можно инициализировать методы без входных данных
-        //public void OnRecieve();
+        public void OnRecieveExt(string text);
+        public void OnRecieveExt2(string text, string text2);
     }
     //Данные события
     public class MessageData : IEventData
